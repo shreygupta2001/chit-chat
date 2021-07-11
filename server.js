@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 
 app.get('/', (req, res) => {
-     res.send({ api: 'chitchat-api'});
+    res.send({ api: 'chitchat-api' });
 })
 
 //function that defines server is listening on mentioned port
@@ -78,67 +78,67 @@ io.on('connection', (socket) => {
     });
 
     //event emitted from client server if the user is disconnected
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
         console.log('user disconnected');
 
         //filter list of active users to remove inactive users and
         //broadcast new list of peers
         peers = peers.filter((peer) => peer.socketId !== socket.id);
-        io.sockets.emit('broadcast', {
+        io.sockets.emit("broadcast", {
             event: broadcastEventTypes.ACTIVE_USERS,
             activeUsers: peers
         });
 
         groupCallRooms = groupCallRooms.filter((room) => room.socketId !== socket.id);
-        io.sockets.emit('broadcast', {
+        io.sockets.emit("broadcast", {
             event: broadcastEventTypes.GROUP_CALL_ROOMS,
             groupCallRooms
         });
     });
 
     // event listeners for direct call - sending pre offer
-    socket.on('pre-offer', (data) => {
-        io.to(data.callee.socketId).emit('pre-offer', {
+    socket.on("pre-offer", (data) => {
+        io.to(data.callee.socketId).emit("pre-offer", {
             callerUsername: data.caller.username,
             callerSocketId: socket.id
         });
     });
 
     // event listener for pre-offer answer
-    socket.on('pre-offer-answer', (data) => {
-        io.to(data.callerSocketId).emit('pre-offer-answer', {
+    socket.on("pre-offer-answer", (data) => {
+        io.to(data.callerSocketId).emit("pre-offer-answer", {
             answer: data.answer
         });
     });
 
     //event listener for webRTC offer
-    socket.on('webRTC-offer', (data) => {
-        io.to(data.calleeSocketId).emit('webRTC-offer', {
+    socket.on("webRTC-offer", (data) => {
+        io.to(data.calleeSocketId).emit("webRTC-offer", {
             offer: data.offer
         });
     });
 
     //event listener for webRTC answer
-    socket.on('webRTC-answer', (data) => {
-        io.to(data.callerSocketId).emit('webRTC-answer', {
+    socket.on("webRTC-answer", (data) => {
+        io.to(data.callerSocketId).emit("webRTC-answer", {
             answer: data.answer
         });
     });
 
     //event listener on webRTC ice candidate exchange
-    socket.on('webRTC-candidate', (data) => {
-        io.to(data.connectedUserSocketId).emit('webRTC-candidate', {
+    socket.on("webRTC-candidate", (data) => {
+        io.to(data.connectedUserSocketId).emit("webRTC-candidate", {
             candidate: data.candidate
         });
     });
 
     //event listener when user hangs up
-    socket.on('user-hanged-up', (data) => {
-        io.to(data.connectedUserSocketId).emit('user-hanged-up');
+    socket.on("user-hanged-up", (data) => {
+        io.to(data.connectedUserSocketId).emit("user-hanged-up");
     });
 
     //event listener related to group call register
-    socket.on('group-call-register', (data) => {
+    socket.on("group-call-register", (data) => {
         const roomId = uuidv4();
         socket.join(roomId);
 
@@ -153,15 +153,15 @@ io.on('connection', (socket) => {
         groupCallRooms.push(newGroupCallRoom);
 
         //broadcasting list of rooms to all users
-        io.sockets.emit('broadcast', {
+        io.sockets.emit("broadcast", {
             event: broadcastEventTypes.GROUP_CALL_ROOMS,
             groupCallRooms
         });
     });
 
     //listener for joining group call request
-    socket.on('group-call-join-request', (data) => {
-        io.to(data.roomId).emit('group-call-join-request', {
+    socket.on("group-call-join-request", (data) => {
+        io.to(data.roomId).emit("group-call-join-request", {
             peerId: data.peerId,
             streamId: data.streamId
         });
@@ -170,19 +170,21 @@ io.on('connection', (socket) => {
     });
 
     //listener for user leaving group call
-    socket.on('group-call-user-left', (data) => {
+    socket.on("group-call-user-left", (data) => {
         socket.leave(data.roomId);
 
-        io.to(data.roomId).emit('group-call-user-left', {
+        io.to(data.roomId).emit("group-call-user-left", {
             streamId: data.streamId
         });
     });
 
     //listener event when group call is closed by host
-    socket.on('group-call-closed-by-host', (data) => {
-        groupCallRooms = groupCallRooms.filter((room) => room.peerId !== data.peerId);
+    socket.on("group-call-closed-by-host", (data) => {
+        groupCallRooms = groupCallRooms.filter(
+            (room) => room.peerId !== data.peerId
+        );
 
-        io.sockets.emit('broadcast', {
+        io.sockets.emit("broadcast", {
             event: broadcastEventTypes.GROUP_CALL_ROOMS,
             groupCallRooms
         });
